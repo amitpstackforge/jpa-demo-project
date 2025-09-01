@@ -1,6 +1,7 @@
 package com.example.jpa.service;
 
 import com.example.jpa.entity.Doctor;
+import com.example.jpa.exception.DoctorNotFoundException;
 import com.example.jpa.exception.ResourceNotFoundException;
 import com.example.jpa.repository.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,4 +67,13 @@ public class DoctorService {
 
         return doctorRepository.save(doctor);
     }
+
+    public List<Doctor> findBySpecializationIgnoreCase(String specialization) {
+        List<Doctor> doctors = doctorRepository.findBySpecializationIgnoreCase(specialization);
+        if(doctors.isEmpty()){
+            throw  new DoctorNotFoundException("No doctors found with specialization: " +specialization);
+        }
+        return doctors;
+    }
+
 }

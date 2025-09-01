@@ -7,6 +7,7 @@ import com.example.jpa.service.DoctorService;
 import com.example.jpa.service.DoctorService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -68,6 +69,11 @@ public class DoctorController {
         return doctorService.updateDoctor(id, doctorDetails);
     }
 
+    @GetMapping("/findBySpecialization")
+    public List<Doctor> findBySpecializationIgnoreCase(
+            @RequestParam @NotBlank(message = "Specialization must not be empty")  String specialization) {
+        return doctorService.findBySpecializationIgnoreCase(specialization);
+    }
 
 
 }

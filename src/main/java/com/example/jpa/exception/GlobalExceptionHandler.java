@@ -46,9 +46,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgument(
-            IllegalArgumentException ex,
-            HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest request) {
 
         ErrorResponse response = new ErrorResponse(
                 LocalDateTime.now(),                     // সময়
@@ -61,6 +59,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    // Custom Exception Handle
+    @ExceptionHandler(DoctorNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleDoctorNotFound(DoctorNotFoundException ex, HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Doctor Not Found",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
 
 
 }
