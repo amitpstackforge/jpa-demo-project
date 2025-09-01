@@ -1,17 +1,23 @@
 package com.example.jpa.service;
 
 import com.example.jpa.dto.DoctorAvailabilityRequestDto;
+import com.example.jpa.dto.DoctorAvailabilityResponseDto;
+import com.example.jpa.entity.AppointmentSlot;
 import com.example.jpa.entity.Doctor;
 import com.example.jpa.entity.DoctorAvailability;
 import com.example.jpa.exception.InvalidAvailabilityException;
+import com.example.jpa.repository.AppointmentSlotRepository;
 import com.example.jpa.repository.DoctorAvailabilityRepository;
 import com.example.jpa.repository.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 @Service
@@ -19,13 +25,16 @@ public class DoctorAvailabilityService {
 
 
     @Autowired
-    private DoctorAvailabilityRepository  doctorAvailabilityRepository;
+    private DoctorAvailabilityRepository doctorAvailabilityRepository;
 
     @Autowired
     private DoctorRepository doctorRepository;
 
+    @Autowired
+    private AppointmentSlotRepository appointmentSlotRepository;
+
     // Service method: ডাক্তার এর availability (কোন দিনে, কত সময় available থাকবেন) সেট করার জন্য
-    public DoctorAvailability setAvailability(Long doctorId, DoctorAvailabilityRequestDto dto) {
+    public DoctorAvailabilityResponseDto setAvailability(Long doctorId, DoctorAvailabilityRequestDto dto) {
 
         // 1. Doctor কে database থেকে খুঁজে আনা doctorId দিয়ে
         // যদি না পাওয়া যায় তাহলে custom exception throw করবে
@@ -57,8 +66,11 @@ public class DoctorAvailabilityService {
             throw new InvalidAvailabilityException("End time must be after start time");
         }
 
+        int slotDuration = dto.getSlotDuration() > 0 ? dto.getSlotDuration() : 15; // default 15 mins
+
+
         // 5. Validation: Slot duration positive হতে হবে (0 বা negative হলে invalid)
-        if (dto.getSlotDuration() <= 0) {
+        if (slotDuration <= 0) {
             throw new InvalidAvailabilityException("Slot duration must be greater than 0");
         }
         LocalTime lunchStart = dto.getLunchStart() != null
@@ -91,10 +103,45 @@ public class DoctorAvailabilityService {
         availability.setLunchStart(lunchStart);
         availability.setLunchEnd(lunchEnd);
 
-        // 7. Database এ save করা এবং return করা
-        return doctorAvailabilityRepository.save(availability);
-    }
 
+
+        // 7. Database এ save করা এবং return করা
+        doctorAvailabilityRepository.save(availability);
+
+
+        List<AppointmentSlot> slotEntities = new ArrayList<>();
+        LocalTime current = start;
+
+        while (!current.plusMinutes(slotDuration).isAfter(end)) {
+            LocalTime next = current.plusMinutes(slotDuration);
+
+            AppointmentSlot slot = new AppointmentSlot();
+            slot.setDate(LocalDate.now()); // আজকের জন্য ধরলাম (future এ dynamic হতে পারে)
+            slot.setStartTime(current);
+            slot.setEndTime(next);
+            slot.setDoctorAvailability(availability);
+
+            slotEntities.add(slot);
+            current = next;
+        }
+
+// সব slot DB তে save করব
+        appointmentSlotRepository.saveAll(slotEntities);
+
+
+
+        return new DoctorAvailabilityResponseDto(
+                availability.getDoctor().getId(),
+                availability.getDoctor().getName(),
+                availability.getDoctor().getSpecialization(),
+                availability.getDayOfWeek().toString(),
+                availability.getStartTime().toString(),
+                availability.getEndTime().toString(),
+                availability.getSlotDuration(),
+                availability.getLunchStart().toString(),
+                availability.getLunchEnd().toString()
+                );
+    }
 
 
 }

@@ -28,6 +28,7 @@ public class DoctorAvailability {
     private LocalTime lunchStart;
     private LocalTime lunchEnd;
 
+
     public LocalTime getLunchStart() {
         return lunchStart;
     }

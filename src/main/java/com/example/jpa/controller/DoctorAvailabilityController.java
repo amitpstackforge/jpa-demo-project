@@ -18,18 +18,7 @@ public class DoctorAvailabilityController {
     public DoctorAvailabilityResponseDto setDoctorAvailability(
             @PathVariable Long id,
             @Valid @RequestBody DoctorAvailabilityRequestDto dto) {
-        DoctorAvailability availability = availabilityService.setAvailability(id, dto);
-        return new DoctorAvailabilityResponseDto(
-                availability.getDoctor().getId(),
-                availability.getDoctor().getName(),
-                availability.getDoctor().getSpecialization(),
-                availability.getDayOfWeek().toString(),
-                availability.getStartTime().toString(),
-                availability.getEndTime().toString(),
-                availability.getSlotDuration(),
-                availability.getLunchStart().toString(),
-                availability.getLunchEnd().toString()
-                );
+        return availabilityService.setAvailability(id, dto);
 
     }
 

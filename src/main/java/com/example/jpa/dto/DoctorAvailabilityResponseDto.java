@@ -1,5 +1,9 @@
 package com.example.jpa.dto;
 
+import com.example.jpa.entity.AppointmentSlot;
+
+import java.util.List;
+
 public class DoctorAvailabilityResponseDto {
     private Long doctorId;
     private String doctorName;
@@ -13,9 +17,12 @@ public class DoctorAvailabilityResponseDto {
     private String lunchStart;
     private String lunchEnd;
 
+
+
+
     public DoctorAvailabilityResponseDto(Long doctorId, String doctorName, String specialization,
                                          String dayOfWeek, String startTime, String endTime, int slotDuration,
-                                         String lunchStart,  String lunchEnd) {
+                                         String lunchStart, String lunchEnd ) {
         this.doctorId = doctorId;
         this.doctorName = doctorName;
         this.specialization = specialization;
