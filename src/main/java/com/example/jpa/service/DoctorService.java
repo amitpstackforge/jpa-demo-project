@@ -1,8 +1,7 @@
 package com.example.jpa.service;
 
 import com.example.jpa.entity.Doctor;
-import com.example.jpa.entity.Doctor;
-import com.example.jpa.repository.DoctorRepository;
+import com.example.jpa.exception.ResourceNotFoundException;
 import com.example.jpa.repository.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,17 +39,31 @@ public class DoctorService {
      * @param id যেই Doctorর তথ্য খুঁজে আনতে হবে
      * @return পাওয়া গেলে Doctor অবজেক্ট, না পাওয়া গেলে null
      */
-    public Doctor getById(long id){
-        return doctorRepository.findById(id).orElse(null);
-    }
 
+
+    public Doctor getById(Long id) {
+        return doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor with ID " + id + " not found"));
+    }
     /**
      * নির্দিষ্ট আইডির Doctor রেকর্ড মুছে ফেলে।
      *
      * @param id যেই Doctor তথ্য মুছে ফেলতে হবে
      */
     public void deleteDoctor(long id){
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor with ID " + id + " not found"));
+
         doctorRepository.deleteById(id);
     }
+    public Doctor updateDoctor(Long id, Doctor doctorDetails) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor with ID " + id + " not found"));
 
+        doctor.setName(doctorDetails.getName());
+        doctor.setSpecialization(doctorDetails.getSpecialization());
+        doctor.setEmail(doctorDetails.getEmail());
+
+        return doctorRepository.save(doctor);
+    }
 }
